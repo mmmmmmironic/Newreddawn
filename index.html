@@ -3347,13 +3347,13 @@ const ED=()=>typeof RO==='undefined',$=(x,e)=>(e||document).querySelector(x),$$=
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let PL=[],SRC='';const ld=t=>{try{const c=JSON.parse(t);if(Array.isArray(c))PL=c;else if(c){PL=c.items||[];SRC=c.src||''}}catch(e){}};
 ld(cfg.textContent);if(ED())try{const l=localStorage.getItem('nrd-midi');if(l)ld(l)}catch(e){}
-const store=()=>{const j=JSON.stringify({src:SRC,items:PL.filter(x=>!x.g)});try{localStorage.setItem('nrd-midi',j)}catch(e){}cfg.textContent=j.replace(/</g,'\\u003c')};
+const store=()=>{const j=JSON.stringify({src:SRC,items:PL.filter(x=>!x.g&&!x.l)});try{localStorage.setItem('nrd-midi',j)}catch(e){}cfg.textContent=j.replace(/</g,'\\u003c')};
 try{W9I.midi=S32('<path d="M12 6l14-3v17M12 6v18" fill="none" stroke="#000" stroke-width="2"/><ellipse cx="9" cy="24" rx="5" ry="3.5" fill="#000080" stroke="#000"/><ellipse cx="23" cy="20" rx="5" ry="3.5" fill="#000080" stroke="#000"/>')}catch(e){}
 const FAM=[['triangle','square',.12,.003,.8,.15,.25,5000],['sine','triangle',.3,.002,.5,0,.4,8000],['square','sine',.5,.01,.1,.9,.08,3000],['sawtooth','triangle',.3,.003,.5,.1,.15,2500],['triangle','sawtooth',.25,.005,.3,.5,.1,900],['sawtooth','sawtooth',.5,.12,.2,.8,.3,2200],['sawtooth','sawtooth',.5,.12,.2,.8,.3,2200],['sawtooth','square',.3,.04,.15,.7,.12,2600],['square','triangle',.3,.04,.1,.7,.1,2200],['sine','triangle',.3,.05,.1,.8,.1,3500],['square','sawtooth',.3,.005,.1,.8,.1,5000],['sawtooth','triangle',.5,.25,.3,.8,.4,1800],['triangle','sine',.3,.05,.5,.5,.2,3000],['sawtooth','triangle',.3,.003,.5,.2,.15,3000],['triangle','sine',.3,.002,.4,0,.2,6000],['sawtooth','square',.3,.2,.5,.3,.2,1500]];
 const FN=['Piano','Chrom','Organ','Guitar','Bass','Strings','Ensem','Brass','Reed','Pipe','Lead','Pad','FX','Ethnic','Perc','SFX'];
 const SG=[126,48,109,121,51,91,95,112,127,123];
 let ctx,mg,an,nb,chg=[],pn=[],pg=[],cv=[],cx=[],ug=[],pa=[],ped=[],hold=[],act=[],av=[],used=[],mu=new Set(),so=new Set(),vm=new Map(),live=new Set();
-let src=null,aud=false,ev=[],evi=0,t0=0,dur=0,playing=false,paused=0,timer=0,cur=-1,sel=-1,shuf=false,rep=false,auto=true,vol=.8,rate=1,tr=0,ui=null,cache={},tk=0;
+let src=null,ael=null,aud=false,ev=[],evi=0,t0=0,dur=0,playing=false,paused=0,timer=0,cur=-1,sel=-1,shuf=false,rep=false,auto=true,vol=.8,rate=1,tr=0,ui=null,cache={},tk=0;
 for(let i=0;i<16;i++){pg[i]=0;pa[i]=64;ug[i]=1;act[i]=-9;av[i]=0;used[i]=0;cv[i]=100/127;cx[i]=1;ped[i]=false;hold[i]=[]}
 function init(){if(ctx)return;ctx=new(window.AudioContext||window.webkitAudioContext)();const c=ctx.createDynamicsCompressor();mg=ctx.createGain();mg.gain.value=vol;an=ctx.createAnalyser();an.fftSize=64;mg.connect(c);c.connect(an);an.connect(ctx.destination);
  for(let i=0;i<16;i++){const g=ctx.createGain(),p=ctx.createStereoPanner();g.connect(p);p.connect(mg);chg[i]=g;pn[i]=p}
@@ -3390,20 +3390,23 @@ function fire(e,at){const c=e[1],ch=e[2],a=e[3],b=e[4];
   else if(a===10){pa[ch]=b;pn[ch].pan.setTargetAtTime((b-64)/64,at,.01)}
   else if(a===64){ped[ch]=b>=64;if(!ped[ch]){hold[ch].forEach(k=>rel(k,at));hold[ch]=[]}}
   else if(a===120||a===123)kill()}}
-function parse(buf){const d=new DataView(buf);let p=0;const u32=()=>{const v=d.getUint32(p);p+=4;return v},u16=()=>{const v=d.getUint16(p);p+=2;return v};
- if(u32()!==0x4d546864)throw 0;u32();u16();const n=u16(),div=u16(),E=[],T=[[0,500000]];
+function parse(buf){const u8=new Uint8Array(buf);let o=0;for(;o<Math.min(u8.length-4,65536);o++)if(u8[o]===77&&u8[o+1]===84&&u8[o+2]===104&&u8[o+3]===100)break;const d=new DataView(buf,o);let p=0;const u32=()=>{const v=d.getUint32(p);p+=4;return v},u16=()=>{const v=d.getUint16(p);p+=2;return v};
+ if(u32()!==0x4d546864)throw 0;u32();u16();const n=u16();let div=u16(),sm=0;if(div&32768){sm=1;div=(256-(div>>8))*(div&255)/2}if(!div)div=480;const E=[],T=[[0,500000]];
  for(let k=0;k<n&&p<d.byteLength-8;k++){const id=u32(),ln=u32(),end=Math.min(p+ln,d.byteLength);if(id!==0x4d54726b){p=end;k--;continue}let tick=0,rs=0;
-  while(p<end){let v=0,b;do{b=d.getUint8(p++);v=v*128+(b&127)}while(b&128);tick+=v;let s=d.getUint8(p);if(s<128)s=rs;else p++;
-   if(s===255){const ty=d.getUint8(p++);let l=0;do{b=d.getUint8(p++);l=l*128+(b&127)}while(b&128);if(ty===81)T.push([tick,d.getUint8(p)<<16|d.getUint16(p+1)]);p+=l;if(ty===47)break}
+  try{while(p<end){let v=0,b;do{b=d.getUint8(p++);v=v*128+(b&127)}while(b&128);tick+=v;let s=d.getUint8(p);if(s<128)s=rs;else p++;
+   if(s===255){const ty=d.getUint8(p++);let l=0;do{b=d.getUint8(p++);l=l*128+(b&127)}while(b&128);if(ty===81&&!sm)T.push([tick,d.getUint8(p)<<16|d.getUint16(p+1)]);p+=l;if(ty===47)break}
    else if(s===240||s===247){let l=0;do{b=d.getUint8(p++);l=l*128+(b&127)}while(b&128);p+=l}
-   else{rs=s;const c=s>>4,a=d.getUint8(p++),bb=(c===12||c===13)?0:d.getUint8(p++);if(c>=8&&c<=12)E.push([tick,c,s&15,a,bb])}}
+   else{rs=s;const c=s>>4,a=d.getUint8(p++),bb=(c===12||c===13)?0:d.getUint8(p++);if(c>=8&&c<=12)E.push([tick,c,s&15,a,bb])}}}catch(x){}
   p=end}
  T.sort((x,y)=>x[0]-y[0]);const S=[];let sc=0;T.forEach((x,i)=>{if(i){const q=S[i-1];sc+=(x[0]-q[0])*q[2]/div/1e6}S.push([x[0],sc,x[1]])});
  E.sort((a,b)=>a[0]-b[0]);let j=0;E.forEach(e=>{while(j+1<S.length&&S[j+1][0]<=e[0])j++;e[0]=S[j][1]+(e[0]-S[j][0])*S[j][2]/div/1e6});
  if(!E.some(e=>e[1]===9))throw 1;return{E,d:E[E.length-1][0]+.5}}
-const host=u=>{try{return new URL(u,location.href).hostname||'this site'}catch(e){return'link'}};
-const AX=/\.(midi?|mp3|ogg|oga|wav|m4a|aac|flac|opus)$/i,nm=u=>{try{return decodeURIComponent(u.split('?')[0].split('/').pop()).replace(AX,'')||'Untitled'}catch(e){return'Untitled'}};
-const gh=u=>{const m=u.trim().match(/^https?:\/\/(?:www\.)?github\.com\/([^\/]+)\/([^\/]+)\/(?:blob|raw)\/([^?#]+)/i);return m?'https://raw.githubusercontent.com/'+m[1]+'/'+m[2]+'/'+m[3]:u.trim()};
+const host=u=>{if(/^blob:/i.test(u))return'this device';try{return new URL(u,location.href).hostname||'this site'}catch(e){return'link'}};
+const AX=/\.(midi?|rmi|kar|mp[1-4]|ogg|oga|opus|wav|m4a|aac|flac|weba|webm|aif|aiff)$/i,nm=u=>{try{return decodeURIComponent(u.split('?')[0].split('/').pop()).replace(AX,'')||'Untitled'}catch(e){return'Untitled'}};
+const gh=u=>{u=u.trim();let m=u.match(/^https?:\/\/(?:www\.)?github\.com\/([^\/]+)\/([^\/]+)\/(?:blob|raw)\/([^?#]+)/i);if(m)return'https://raw.githubusercontent.com/'+m[1]+'/'+m[2]+'/'+m[3];
+ if(/^https?:\/\/(?:www\.)?dropbox\.com\//i.test(u))return u.replace(/^https?:\/\/(?:www\.)?dropbox\.com\//i,'https://dl.dropboxusercontent.com/');
+ m=u.match(/^https?:\/\/drive\.google\.com\/file\/d\/([\w-]+)/i)||u.match(/^https?:\/\/drive\.google\.com\/(?:open|uc)\?(?:[^#]*&)?id=([\w-]+)/i);if(m)return'https://drive.google.com/uc?export=download&id='+m[1];
+ return u};
 const GHF=/^https?:\/\/(?:www\.)?github\.com\/([^\/?#]+)\/([^\/?#]+)(?:\/tree\/([^\/?#]+)(?:\/([^?#]*))?)?\/?(?:[?#].*)?$/i;
 async function ls(u){const m=u.trim().match(GHF);if(!m)throw 0;const r=await fetch('https://api.github.com/repos/'+m[1]+'/'+m[2].replace(/\.git$/,'')+'/contents/'+(m[4]||'')+(m[3]?'?ref='+m[3]:''));if(!r.ok)throw 0;return(await r.json()).filter(y=>AX.test(y.name)&&y.download_url)}
 let glDone='';
@@ -3413,21 +3416,43 @@ async function glSync(force){if(!SRC){PL=PL.filter(x=>!x.g);draw();return}if(!fo
   const own=PL.filter(x=>!x.g),have=new Set(own.map(x=>gh(x.u)));PL=own.concat(L.filter(u=>!have.has(u)).map(u=>({t:'',u,g:1})));say('GitHub library: '+L.length+' file'+(L.length===1?'':'s'))}
  catch(e){say('Could not read the GitHub folder (check the link, or the rate limit).')}draw()}
 const fmt=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
-const P=()=>playing?(ctx.currentTime-t0)*rate:paused;
+const P=()=>ael?ael.currentTime:playing?(ctx.currentTime-t0)*rate:paused;
 const say=m=>{if(ui)ui.st.textContent=m};
-function halt(){clearInterval(timer);playing=false;if(src){try{src.stop()}catch(e){}src=null}kill()}
+function halt(){clearInterval(timer);playing=false;if(src){try{src.stop()}catch(e){}src=null}if(ael){try{ael.pause()}catch(e){}ael=null}kill()}
 function stop(){halt();paused=0;ev=[];say('Stopped');draw()}
+const isMidi=b=>{const u=new Uint8Array(b,0,Math.min(b.byteLength,4096));for(let i=0;i+3<u.length;i++)if(u[i]===77&&u[i+1]===84&&u[i+2]===104&&u[i+3]===100)return 1;return 0};
+const tmo=ms=>{try{return{signal:AbortSignal.timeout(ms)}}catch(e){return{}}};
+async function grab(u){const loc=/^(blob|data):/i.test(u);
+ try{const r=await fetch(u,loc?{}:tmo(20000));if(!r.ok){const e=new Error('The link answered with error '+r.status+'.');e.hard=1;throw e}return await r.arrayBuffer()}catch(e){if(e.hard||loc)throw e}
+ /* GitHub's raw host sends a header Chrome rejects when the file name has a comma, so ask GitHub's API (then jsDelivr) for the same file */
+ const gm=u.match(/^https:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/);
+ if(gm){const pth=gm[4].split('?')[0];
+  try{const r=await fetch('https://api.github.com/repos/'+gm[1]+'/'+gm[2]+'/contents/'+pth+'?ref='+gm[3],Object.assign({headers:{Accept:'application/vnd.github.raw'}},tmo(30000)));if(r.ok)return await r.arrayBuffer()}catch(e){}
+  try{const r=await fetch('https://cdn.jsdelivr.net/gh/'+gm[1]+'/'+gm[2]+'@'+gm[3]+'/'+pth,tmo(30000));if(r.ok)return await r.arrayBuffer()}catch(e){}}
+ /* the host does not allow other sites to read it: try a public relay before giving up */
+ for(const X of['https://corsproxy.io/?url=','https://api.allorigins.win/raw?url=']){try{const r=await fetch(X+encodeURIComponent(u),tmo(12000));if(r.ok){const b=await r.arrayBuffer();if(b.byteLength>64)return b}}catch(e){}}
+ const e=new Error('Could not read that link from here: the host blocks other sites.');e.cors=1;throw e}
+const viaEl=u=>new Promise((ok,no)=>{const a=new Audio(),bad=()=>no(new Error('Could not load that link. It may be dead, not an audio file, or the host blocks other sites.'));a.preload='auto';const to=setTimeout(()=>{a.src='';bad()},15000);a.onloadedmetadata=()=>{clearTimeout(to);ok(a)};a.onerror=()=>{clearTimeout(to);bad()};a.src=u});
 async function play(i,at0){const it=PL[i];if(!it)return;
  try{init();if(ctx.state==='suspended')ctx.resume()}catch(e){say('This browser cannot play audio.');return}
- halt();cur=i;sel=i;paused=0;const my=++tk;say('Connecting to '+host(it.u)+' ...');draw();
- try{let m=cache[it.u];if(!m){const r=await fetch(gh(it.u));if(!r.ok)throw 0;const buf=await r.arrayBuffer(),h=new Uint8Array(buf,0,4);m=cache[it.u]=(h[0]===77&&h[1]===84&&h[2]===104&&h[3]===100)?parse(buf):await ctx.decodeAudioData(buf).then(A=>({A,d:A.duration}))}
-  if(my!==tk)return;dur=m.d;reset();at0=at0||0;aud=!!m.A;let j=0;if(aud){ev=[];src=ctx.createBufferSource();src.buffer=m.A;src.playbackRate.value=rate;src.connect(mg);src.start(0,Math.min(at0,Math.max(0,dur-.05)))}else{ev=m.E;while(j<ev.length&&ev[j][0]<at0){if(ev[j][1]>=11)fire(ev[j],ctx.currentTime);j++}}
-  evi=j;t0=ctx.currentTime-at0/rate;playing=true;timer=setInterval(tick,30);say('Playing '+nm(it.u)+' from '+host(it.u));draw()}
- catch(e){if(my!==tk)return;playing=false;say('Could not load. The link may be dead, not a MIDI or audio file, or the host blocks other sites (CORS).');draw()}}
+ halt();cur=i;sel=i;paused=0;const my=++tk,ttl=it.t||nm(it.u),url=gh(it.u);say('Connecting to '+host(it.u)+' ...');draw();
+ try{let m=cache[it.u];
+  if(!m){let buf=null;
+   try{buf=await grab(url)}catch(e){if(!e.cors||/\.(midi?|rmi|kar)(\?|#|$)/i.test(url))throw e}
+   if(buf){if(isMidi(buf))m=parse(buf);else{try{m={A:await ctx.decodeAudioData(buf.slice(0))};m.d=m.A.duration}catch(e){const x=new Error('This browser could not decode that file. It may not be MIDI or audio, or the format is not supported here.');throw x}}}
+   else{const a=await viaEl(url);m={el:1,d:isFinite(a.duration)?a.duration:0};a.src=''}
+   if(my!==tk)return;cache[it.u]=m}
+  if(my!==tk)return;dur=m.d;reset();at0=at0||0;aud=!!(m.A||m.el);let j=0;ev=[];
+  if(m.A){src=ctx.createBufferSource();src.buffer=m.A;src.playbackRate.value=rate;src.connect(mg);src.start(0,Math.min(at0,Math.max(0,dur-.05)))}
+  else if(m.el){const a=await viaEl(url);if(my!==tk){a.src='';return}a.playbackRate=rate;a.volume=vol;if(at0)a.currentTime=Math.min(at0,Math.max(0,(a.duration||0)-.05));await a.play();if(my!==tk){a.pause();a.src='';return}ael=a;if(isFinite(a.duration)&&a.duration>0)dur=m.d=a.duration}
+  else{ev=m.E;while(j<ev.length&&ev[j][0]<at0){if(ev[j][1]>=11)fire(ev[j],ctx.currentTime);j++}}
+  evi=j;t0=ctx.currentTime-at0/rate;playing=true;timer=setInterval(tick,30);say('Playing '+ttl+' from '+host(it.u));draw()}
+ catch(e){if(my!==tk)return;playing=false;if(ael){try{ael.pause()}catch(x){}ael=null}
+  say(e&&e.name==='NotAllowedError'?'The browser blocked playback. Press Play again.':e&&e.message&&typeof e==='object'?e.message:'That file could not be read as MIDI, or it has no notes.');draw()}}
 function step(d,aut){const n=PL.length;if(!n)return;let i;if(shuf&&n>1){do i=Math.floor(Math.random()*n);while(i===cur)}else{i=cur+d;if(i>=n||i<0){if(aut&&!rep){stop();return}i=(i+n)%n}}play(i,0)}
 function tick(){if(ui&&!ui.r.isConnected){ui=null;stop();return}
- const now=(ctx.currentTime-t0)*rate;while(evi<ev.length&&ev[evi][0]<now+.5*rate){const e=ev[evi++];try{fire(e,Math.max(t0+e[0]/rate,ctx.currentTime))}catch(x){}}
- if(now>dur+(aud?.1:1.5)){if(auto)step(1,true);else stop();return}upd(now)}
+ const now=P();while(evi<ev.length&&ev[evi][0]<now+.5*rate){const e=ev[evi++];try{fire(e,Math.max(t0+e[0]/rate,ctx.currentTime))}catch(x){}}
+ if(ael?(ael.ended||(dur>0&&now>dur+.1)):now>dur+(aud?.1:1.5)){if(auto)step(1,true);else stop();return}upd(now)}
 function seg(g,x,y,w,h,m,on,of){const t=Math.max(2,w/6),a=h/2-t*1.5;[[x+t,y,w-2*t,t],[x+w-t,y+t,t,a],[x+w-t,y+h/2+t/2,t,a],[x+t,y+h-t,w-2*t,t],[x,y+h/2+t/2,t,a],[x,y+t,t,a],[x+t,y+h/2-t/2,w-2*t,t]].forEach((r,i)=>{g.fillStyle=m&(64>>i)?on:of;g.fillRect(r[0],r[1],r[2],r[3])})}
 function upd(now){if(!ui)return;const c=ui.cv,g=c.getContext('2d'),on='#39f0ff',of='#06323a';g.fillStyle='#000';g.fillRect(0,0,c.width,c.height);
  const s=Math.floor(Math.max(0,now)),m=Math.min(99,Math.floor(s/60)),q=s%60;
@@ -3446,8 +3471,8 @@ function draw(){if(!ui)return;const r=ui.r;
  ui.nm.textContent=cur>-1&&PL[cur]?(PL[cur].t||nm(PL[cur].u)):'NO FILE';ui.cnt.textContent=PL.length+' file'+(PL.length===1?'':'s');
  ui.tmv.textContent=Math.round(rate*100)+'%';ui.krv.textContent=(tr>0?'+':'')+tr;
  const t=(c,v)=>$('[data-c="'+c+'"]',r).classList.toggle('on',!!v);t('play',playing);t('pause',!playing&&paused>0);t('sh',shuf);t('rp',rep);t('auto',auto);upd(P())}
-function seekBy(d){if(cur<0||!ev.length)return;play(cur,Math.max(0,Math.min(dur,P()+d)))}
-function tmp(d){const p=playing?P():0;rate=Math.max(.5,Math.min(2,Math.round((rate+d)*100)/100));if(playing)t0=ctx.currentTime-p/rate;if(src)src.playbackRate.value=rate;draw()}
+function seekBy(d){if(cur<0||!dur)return;play(cur,Math.max(0,Math.min(dur,P()+d)))}
+function tmp(d){const p=playing?P():0;rate=Math.max(.5,Math.min(2,Math.round((rate+d)*100)/100));if(playing)t0=ctx.currentTime-p/rate;if(src)src.playbackRate.value=rate;if(ael)ael.playbackRate=rate;draw()}
 const CMD={prev:()=>step(-1),next:()=>step(1),stop,rw:()=>seekBy(-5),ff:()=>seekBy(5),
  play:()=>{if(playing)return;if(cur>-1&&paused>0)play(cur,paused);else if(PL.length)play(sel>-1?sel:0,0)},
  pause:()=>{if(playing){paused=P();halt();say('Paused');draw()}else CMD.play()},
@@ -3458,8 +3483,10 @@ const CMD={prev:()=>step(-1),next:()=>step(1),stop,rw:()=>seekBy(-5),ff:()=>seek
    if(GHF.test(g)&&!AX.test(g)){say('Reading GitHub folder ...');try{(await ls(g)).forEach(y=>{if(!PL.some(p=>gh(p.u)===y.download_url)){PL.push({t:'',u:y.download_url});n++}})}catch(e){say('Could not read that GitHub folder (private repo, wrong link, or rate limit).')}}
    else{PL.push({t,u:g});n++}}
   if(n){store();ui.u.value=ui.t.value='';sel=PL.length-1;draw();say('Added '+n+' file'+(n===1?'':'s'))}},
- del:()=>{if(sel<0||!PL[sel])return;if(PL[sel].g){say('This file comes from the GitHub folder. Remove it there.');return}if(sel===cur){stop();cur=-1}else if(sel<cur)cur--;PL.splice(sel,1);sel=Math.min(sel,PL.length-1);store();draw()},
+ open:()=>ui.fi.click(),del:()=>{if(sel<0||!PL[sel])return;if(PL[sel].l){try{URL.revokeObjectURL(PL[sel].u)}catch(e){}}if(PL[sel].g){say('This file comes from the GitHub folder. Remove it there.');return}if(sel===cur){stop();cur=-1}else if(sel<cur)cur--;PL.splice(sel,1);sel=Math.min(sel,PL.length-1);store();draw()},
  up:()=>mv(-1),dn:()=>mv(1),src:()=>{SRC=ui.g.value.trim();store();glDone='';PL=PL.filter(x=>!x.g);draw();glSync(true)},sync:()=>glSync(true)};
+function addFiles(fl){let n=0;[...fl].forEach(f=>{if(/^(image|text)\//.test(f.type)&&!AX.test(f.name))return;PL.push({t:f.name.replace(AX,'')||f.name,u:URL.createObjectURL(f),l:1});n++});
+ if(n){sel=PL.length-1;draw();say('Added '+n+' file'+(n===1?'':'s')+' from this device (kept until you close the page)')}else say('Those files were not MIDI or audio.')}
 function mv(d){const j=sel+d;if(sel<0||j<0||j>=PL.length)return;[PL[sel],PL[j]]=[PL[j],PL[sel]];if(cur===sel)cur=j;else if(cur===j)cur=sel;sel=j;store();draw()}
 const IC={prev:'M2 2h2v10H2zM12 2v10L5 7z',rw:'M7 2v10L1 7zM13 2v10L7 7z',play:'M3 2l8 5-8 5z',pause:'M3 2h3v10H3zM8 2h3v10H8z',stop:'M3 3h8v8H3z',ff:'M1 2l6 5-6 5zM7 2l6 5-6 5z',next:'M10 2h2v10h-2zM2 2l7 5-7 5z'};
 const spin=(k,l)=>'<div class="grp"><span>'+l+'</span><button data-c="'+k+'-">-</button><output class="'+k+'v">0</output><button data-c="'+k+'+">+</button></div>';
@@ -3467,20 +3494,20 @@ function build(b,w){const ed=ED();
  b.innerHTML='<div class="mj"><div class="mj-top"><div class="lcdw"><canvas class="mj-cv" width="300" height="84"></canvas><div class="mj-nm"></div></div><div class="side"><div class="brand">Player</div><div class="grp"><span>Volume</span><input class="mj-vo" type="range" min="0" max="100" value="'+Math.round(vol*100)+'" aria-label="Volume"></div>'+spin('tm','Tempo')+spin('kr','Key')+'</div></div>'+
  '<div class="mj-tr">'+['prev','rw','play','pause','stop','ff','next'].map(k=>'<button data-c="'+k+'" aria-label="'+k+'"><svg viewBox="0 0 14 14"><path d="'+IC[k]+'"/></svg></button>').join('')+'<input class="mj-sk" type="range" min="0" max="1000" value="0" aria-label="Position"><button data-c="auto">Auto</button><button data-c="sh">Shuffle</button><button data-c="rp">Repeat</button></div>'+
  '<div class="mj-mx">'+Array.from({length:16},(_,i)=>'<div class="ch"><u class="lt"></u><i class="kn"></i><input class="fd" type="range" min="0" max="150" value="100" data-f="'+i+'" aria-label="Channel '+(i+1)+' level"><button data-m="'+i+'">M</button><button data-s="'+i+'">S</button><b>'+(i+1)+'</b><small></small></div>').join('')+'</div>'+
- '<div class="mj-hd"><span>#</span><span>Title</span><span>Time</span><span>Source</span></div><div class="mj-ls" tabindex="0"></div>'+
+ '<div class="mj-ed"><button data-c="open">Open files...</button><input class="mj-fi" type="file" multiple hidden accept="audio/*,.mid,.midi,.rmi,.kar,.mp3,.ogg,.oga,.opus,.wav,.m4a,.aac,.flac,.weba,.webm,.aif,.aiff"><span class="mj-dz">or drop MIDI / audio files here</span></div><div class="mj-hd"><span>#</span><span>Title</span><span>Time</span><span>Source</span></div><div class="mj-ls" tabindex="0"></div>'+
  (ed?'<div class="mj-ed"><input class="mj-in1" placeholder="Title (optional)"><input class="mj-in2" placeholder="Link to a .mid or .mp3 file, or a GitHub folder"><button data-c="add">Add</button><button data-c="del">Remove</button><button data-c="up">Up</button><button data-c="dn">Down</button></div><div class="mj-ed"><input class="mj-in3" placeholder="GitHub folder for the shared library (optional)" value="'+esc(SRC)+'"><button data-c="src">Set</button><button data-c="sync">Sync</button></div>':'')+
  '<div class="mj-sb"><span class="mj-st">Ready</span><span class="mj-n"></span></div></div>';
- const r=$('.mj',b);ui={r,ls:$('.mj-ls',r),cv:$('.mj-cv',r),nm:$('.mj-nm',r),st:$('.mj-st',r),cnt:$('.mj-n',r),sk:$('.mj-sk',r),tmv:$('.tmv',r),krv:$('.krv',r),t:$('.mj-in1',r),u:$('.mj-in2',r),g:$('.mj-in3',r),dg:false,ch:$$('.ch',r).map(el=>({el,lt:$('.lt',el),kn:$('.kn',el),nm:$('small',el)}))};
+ const r=$('.mj',b);ui={r,ls:$('.mj-ls',r),cv:$('.mj-cv',r),nm:$('.mj-nm',r),st:$('.mj-st',r),cnt:$('.mj-n',r),sk:$('.mj-sk',r),tmv:$('.tmv',r),krv:$('.krv',r),t:$('.mj-in1',r),u:$('.mj-in2',r),g:$('.mj-in3',r),fi:$('.mj-fi',r),dg:false,ch:$$('.ch',r).map(el=>({el,lt:$('.lt',el),kn:$('.kn',el),nm:$('small',el)}))};
+ let lk=-1,lt=0;ui.fi.onchange=()=>{addFiles(ui.fi.files);ui.fi.value=''};r.ondragover=e=>e.preventDefault();r.ondrop=e=>{e.preventDefault();if(e.dataTransfer&&e.dataTransfer.files.length)addFiles(e.dataTransfer.files)};
  r.onclick=e=>{const m=e.target.closest('[data-m],[data-s]');if(m){const i=+(m.dataset.m||m.dataset.s),S=m.dataset.m!==undefined?mu:so;S.has(i)?S.delete(i):S.add(i);if(ctx)for(let c=0;c<16;c++)ga(c,ctx.currentTime);mbtn();return}
-  const t=e.target.closest('button[data-c],.mj-i');if(!t)return;if(t.dataset.c){CMD[t.dataset.c]();return}sel=+t.dataset.i;draw();if(matchMedia('(pointer:coarse)').matches)play(sel,0)};
- r.ondblclick=e=>{const t=e.target.closest('.mj-i');if(t)play(+t.dataset.i,0)};
+  const t=e.target.closest('button[data-c],.mj-i');if(!t)return;if(t.dataset.c){CMD[t.dataset.c]();return}const k=+t.dataset.i,nw=Date.now();if(k===lk&&nw-lt<500){lt=0;play(k,0);return}lk=k;lt=nw;sel=k;draw();if(matchMedia('(pointer:coarse)').matches)play(sel,0)};
  r.oninput=e=>{const f=e.target;if(f.dataset.f!==undefined){const i=+f.dataset.f;ug[i]=f.value/100;if(ctx)ga(i,ctx.currentTime)}};
  ui.sk.oninput=()=>{ui.dg=true};ui.sk.onchange=()=>{ui.dg=false;if(cur>-1&&dur)play(cur,ui.sk.value/1000*dur)};
- $('.mj-vo',r).oninput=e=>{vol=e.target.value/100;if(mg)mg.gain.value=vol};
+ $('.mj-vo',r).oninput=e=>{vol=e.target.value/100;if(mg)mg.gain.value=vol;if(ael)ael.volume=vol};
  if(ui.u)ui.u.onkeydown=e=>{if(e.key==='Enter')CMD.add()};
- w.menu=[{l:'File',m:(ed?[['Add link...',()=>ui&&ui.u&&ui.u.focus()],['Remove selected',CMD.del],'-']:[]).concat([['Close',()=>w9close(w.id)]])},{l:'Options',m:[['Auto-advance',CMD.auto],['Shuffle',CMD.sh],['Repeat',CMD.rp],'-',['Reset mixer',resetMix],['Sync GitHub library',()=>glSync(true)]]},{l:'Help',m:[['About Player',()=>alert('Player\nPlays MIDI files with a built-in synthesizer, and MP3, OGG and WAV audio.\nTempo works on everything. Key, mute, solo and channel levels are for MIDI only.')]]}];
+ w.menu=[{l:'File',m:(ed?[['Add link...',()=>ui&&ui.u&&ui.u.focus()],['Remove selected',CMD.del],'-']:[]).concat([['Close',()=>w9close(w.id)]])},{l:'Options',m:[['Auto-advance',CMD.auto],['Shuffle',CMD.sh],['Repeat',CMD.rp],'-',['Reset mixer',resetMix],['Sync GitHub library',()=>glSync(true)]]},{l:'Help',m:[['About Player',()=>alert('Player\nPlays MIDI files with a built-in synthesizer, and MP3, OGG, WAV, M4A, FLAC and other audio.\nOpen files from this device, drop them on the window, or add links.\nTempo works on everything. Key, mute, solo and channel levels are for MIDI only.')]]}];
  draw();glSync()}
-window.mjDef=()=>({t:'Player',i:'midi',w:600,h:600,menu:true,build:(b,w)=>build(b,w)});
+window.mjDef=()=>({t:'Player',i:'midi',w:600,h:635,menu:true,build:(b,w)=>build(b,w)});
 })();
 </script>
 <style id="nrd-news-css">.rx-bar{flex-wrap:wrap}
@@ -3498,7 +3525,7 @@ body .sc{font-variant:small-caps;letter-spacing:.04em}
 .xskb:hover,.xskb:focus-visible{opacity:.8}
 </style>
 <script id="lore-boot">(function(){
-var V='mvt4vwtz',F={wiki:'data/wiki.json',stories:'data/stories.json',messenger:'data/messenger.json',outlets:'data/outlets.json'};
+var V='mvt8gdkz',F={wiki:'data/wiki.json',stories:'data/stories.json',messenger:'data/messenger.json',outlets:'data/outlets.json'};
 var pend=document.querySelectorAll('script[type="text/lore-deferred"]'),box=document.getElementById('lore-loading');
 if(!pend.length){if(box)box.remove();return}
 function fail(msg){if(!box)return;box.innerHTML='<div style="max-width:560px;padding:24px"><h2 style="margin:0 0 10px">The archive could not load</h2><p style="white-space:pre-wrap">'+msg+'</p><p><button id="lore-retry" style="font:inherit;padding:6px 14px">Try again</button></p></div>';document.getElementById('lore-retry').onclick=function(){location.reload()}}
