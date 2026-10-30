@@ -3341,17 +3341,18 @@ body.w95:not(:has(#intro)) #crt{z-index:6!important}
 .mj-ed input{height:24px;font:inherit;border:0;padding:0 5px;background:#fff;box-shadow:inset 1px 1px #808080,inset -1px -1px #fff,inset 2px 2px #0a0a0a}.mj-in1{width:120px}.mj-in2{flex:1;min-width:150px}
 .mj-sb{display:flex;gap:4px;padding:2px;font-size:11px}.mj-sb span{padding:1px 6px;box-shadow:inset 1px 1px #808080,inset -1px -1px #fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mj-sb .mj-st{flex:1}
 </style>
-<script type="application/json" id="midi-cfg">[]</script>
+<script type="application/json" id="midi-cfg">{"src":"","items":[{"t":"Test","u":"https://raw.githubusercontent.com/mmmmmmironic/Newreddawn/main/Midis/Test.mid"},{"t":"","u":"https://raw.githubusercontent.com/mmmmmmironic/Newreddawn/main/Midis/2026-04-30%201341%20(Thursday)%203809%20notes%2C%20305%20seconds.mp3"}],"sf":{"src":"https://github.com/mmmmmmironic/Newreddawn/tree/main/sf2","def":"https://raw.githubusercontent.com/mmmmmmironic/Newreddawn/main/sf2/yahama%20U1.SF2"}}</script>
 <script type="text/lore-deferred" id="nrd-midi-js">(function(){
 const ED=()=>typeof RO==='undefined',$=(x,e)=>(e||document).querySelector(x),$$=(x,e)=>[...(e||document).querySelectorAll(x)],cfg=$('#midi-cfg');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let PL=[],SRC='';const ld=t=>{try{const c=JSON.parse(t);if(Array.isArray(c))PL=c;else if(c){PL=c.items||[];SRC=c.src||''}}catch(e){}};
+let PL=[],SRC='',SF={src:'',def:''};const ld=t=>{try{const c=JSON.parse(t);if(Array.isArray(c))PL=c;else if(c){PL=c.items||[];SRC=c.src||'';if(c.sf)SF=Object.assign({src:'',def:''},c.sf)}}catch(e){}};
 ld(cfg.textContent);if(ED())try{const l=localStorage.getItem('nrd-midi');if(l)ld(l)}catch(e){}
-const store=()=>{const j=JSON.stringify({src:SRC,items:PL.filter(x=>!x.g&&!x.l)});try{localStorage.setItem('nrd-midi',j)}catch(e){}cfg.textContent=j.replace(/</g,'\\u003c')};
+const store=()=>{const j=JSON.stringify({src:SRC,items:PL.filter(x=>!x.g&&!x.l),sf:SF});try{localStorage.setItem('nrd-midi',j)}catch(e){}cfg.textContent=j.replace(/</g,'\\u003c')};
 try{W9I.midi=S32('<path d="M12 6l14-3v17M12 6v18" fill="none" stroke="#000" stroke-width="2"/><ellipse cx="9" cy="24" rx="5" ry="3.5" fill="#000080" stroke="#000"/><ellipse cx="23" cy="20" rx="5" ry="3.5" fill="#000080" stroke="#000"/>')}catch(e){}
 const FAM=[['triangle','square',.12,.003,.8,.15,.25,5000],['sine','triangle',.3,.002,.5,0,.4,8000],['square','sine',.5,.01,.1,.9,.08,3000],['sawtooth','triangle',.3,.003,.5,.1,.15,2500],['triangle','sawtooth',.25,.005,.3,.5,.1,900],['sawtooth','sawtooth',.5,.12,.2,.8,.3,2200],['sawtooth','sawtooth',.5,.12,.2,.8,.3,2200],['sawtooth','square',.3,.04,.15,.7,.12,2600],['square','triangle',.3,.04,.1,.7,.1,2200],['sine','triangle',.3,.05,.1,.8,.1,3500],['square','sawtooth',.3,.005,.1,.8,.1,5000],['sawtooth','triangle',.5,.25,.3,.8,.4,1800],['triangle','sine',.3,.05,.5,.5,.2,3000],['sawtooth','triangle',.3,.003,.5,.2,.15,3000],['triangle','sine',.3,.002,.4,0,.2,6000],['sawtooth','square',.3,.2,.5,.3,.2,1500]];
 const FN=['Piano','Chrom','Organ','Guitar','Bass','Strings','Ensem','Brass','Reed','Pipe','Lead','Pad','FX','Ethnic','Perc','SFX'];
 const SG=[126,48,109,121,51,91,95,112,127,123];
+let SFN=null,sfSel='',SFL=[],sfCache={},sfFail={},sfTok=0,bk=new Array(16).fill(0);
 let ctx,mg,an,nb,chg=[],pn=[],pg=[],cv=[],cx=[],ug=[],pa=[],ped=[],hold=[],act=[],av=[],used=[],mu=new Set(),so=new Set(),vm=new Map(),live=new Set();
 let src=null,ael=null,aud=false,ev=[],evi=0,t0=0,dur=0,playing=false,paused=0,timer=0,cur=-1,sel=-1,shuf=false,rep=false,auto=true,vol=.8,rate=1,tr=0,ui=null,cache={},tk=0;
 for(let i=0;i<16;i++){pg[i]=0;pa[i]=64;ug[i]=1;act[i]=-9;av[i]=0;used[i]=0;cv[i]=100/127;cx[i]=1;ped[i]=false;hold[i]=[]}
@@ -3360,7 +3361,7 @@ function init(){if(ctx)return;ctx=new(window.AudioContext||window.webkitAudioCon
  nb=ctx.createBuffer(1,ctx.sampleRate,ctx.sampleRate);const d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}
 const ga=(ch,at)=>chg[ch].gain.setTargetAtTime(cv[ch]*cx[ch]*ug[ch]*(so.size?(so.has(ch)?1:0):(mu.has(ch)?0:1)),at,.01);
 function resetMix(){mu.clear();so.clear();for(let i=0;i<16;i++){ug[i]=1;if(ctx)ga(i,ctx.currentTime)}if(ui){$$('.fd',ui.r).forEach(f=>f.value=100);mbtn()}}
-function reset(){for(let i=0;i<16;i++){pg[i]=0;pa[i]=64;cv[i]=100/127;cx[i]=1;ped[i]=false;hold[i]=[];act[i]=-9;av[i]=0;used[i]=0;pn[i].pan.value=0}resetMix()}
+function reset(){bk.fill(0);for(let i=0;i<16;i++){pg[i]=0;pa[i]=64;cv[i]=100/127;cx[i]=1;ped[i]=false;hold[i]=[];act[i]=-9;av[i]=0;used[i]=0;pn[i].pan.value=0}resetMix()}
 function drum(n,vel,at,o){const g=ctx.createGain();g.connect(o);let L=.15,pk=vel*.6;
  const tone=(a,b,t)=>{const s=ctx.createOscillator();s.frequency.setValueAtTime(a,at);s.frequency.exponentialRampToValueAtTime(b,at+t);s.connect(g);s.start(at);s.stop(at+L+.05)};
  const nz=hp=>{const s=ctx.createBufferSource();s.buffer=nb;const f=ctx.createBiquadFilter();f.type='highpass';f.frequency.value=hp;s.connect(f);f.connect(g);s.start(at);s.stop(at+L+.05)};
@@ -3372,7 +3373,7 @@ function drum(n,vel,at,o){const g=ctx.createGain();g.connect(o);let L=.15,pk=vel
  else if(n>=41&&n<=50){L=.25;const f=80+(n-41)*18;tone(f*2,f,.15)}
  else{L=.08;pk*=.4;nz(3000)}
  g.gain.setValueAtTime(pk,at);g.gain.exponentialRampToValueAtTime(.001,at+L)}
-function on(ch,n,v,at){act[ch]=at;av[ch]=v/127;used[ch]=1;if(live.size>64)return;const vel=v/127,o=chg[ch];if(ch===9)return drum(n,vel,at,o);
+function on(ch,n,v,at){act[ch]=at;av[ch]=v/127;used[ch]=1;if(live.size>128)return;const vel=v/127,o=chg[ch];if(SFN&&sfOn(ch,n,v,at))return;if(ch===9)return drum(n,vel,at,o);
  const F=FAM[pg[ch]>>3],f=440*Math.pow(2,(n+tr-69)/12),lp=ctx.createBiquadFilter(),en=ctx.createGain(),rg=ctx.createGain(),pk=vel*.2;
  lp.type='lowpass';lp.frequency.value=Math.min(F[7],f*7);
  const os=[0,1].map(i=>{const q=ctx.createOscillator(),g=ctx.createGain();q.type=F[i];q.frequency.value=f*(i?1.003:1);g.gain.value=i?F[2]:1;q.connect(g);g.connect(lp);q.start(at);return q});
@@ -3386,7 +3387,7 @@ function fire(e,at){const c=e[1],ch=e[2],a=e[3],b=e[4];
  if(c===9&&b>0)on(ch,a,b,at);
  else if(c===8||c===9){const k=ch*128+a;if(ped[ch])hold[ch].push(k);else rel(k,at)}
  else if(c===12)pg[ch]=a;
- else if(c===11){if(a===7||a===11){if(a===7)cv[ch]=b/127;else cx[ch]=b/127;ga(ch,at)}
+ else if(c===11){if(a===0)bk[ch]=b;else if(a===7||a===11){if(a===7)cv[ch]=b/127;else cx[ch]=b/127;ga(ch,at)}
   else if(a===10){pa[ch]=b;pn[ch].pan.setTargetAtTime((b-64)/64,at,.01)}
   else if(a===64){ped[ch]=b>=64;if(!ped[ch]){hold[ch].forEach(k=>rel(k,at));hold[ch]=[]}}
   else if(a===120||a===123)kill()}}
@@ -3408,7 +3409,7 @@ const gh=u=>{u=u.trim();let m=u.match(/^https?:\/\/(?:www\.)?github\.com\/([^\/]
  m=u.match(/^https?:\/\/drive\.google\.com\/file\/d\/([\w-]+)/i)||u.match(/^https?:\/\/drive\.google\.com\/(?:open|uc)\?(?:[^#]*&)?id=([\w-]+)/i);if(m)return'https://drive.google.com/uc?export=download&id='+m[1];
  return u};
 const GHF=/^https?:\/\/(?:www\.)?github\.com\/([^\/?#]+)\/([^\/?#]+)(?:\/tree\/([^\/?#]+)(?:\/([^?#]*))?)?\/?(?:[?#].*)?$/i;
-async function ls(u){const m=u.trim().match(GHF);if(!m)throw 0;const r=await fetch('https://api.github.com/repos/'+m[1]+'/'+m[2].replace(/\.git$/,'')+'/contents/'+(m[4]||'')+(m[3]?'?ref='+m[3]:''));if(!r.ok)throw 0;return(await r.json()).filter(y=>AX.test(y.name)&&y.download_url)}
+async function ls(u,rx){const m=u.trim().match(GHF);if(!m)throw 0;const r=await fetch('https://api.github.com/repos/'+m[1]+'/'+m[2].replace(/\.git$/,'')+'/contents/'+(m[4]||'')+(m[3]?'?ref='+m[3]:''));if(!r.ok)throw 0;return(await r.json()).filter(y=>(rx||AX).test(y.name)&&y.download_url)}
 let glDone='';
 async function glSync(force){if(!SRC){PL=PL.filter(x=>!x.g);draw();return}if(!force&&glDone===SRC)return;glDone=SRC;let L;
  try{const c=JSON.parse(sessionStorage.getItem('nrd-gl')||'null');if(!force&&c&&c.s===SRC&&Date.now()-c.t<6e5)L=c.l}catch(e){}
@@ -3420,6 +3421,71 @@ const P=()=>ael?ael.currentTime:playing?(ctx.currentTime-t0)*rate:paused;
 const say=m=>{if(ui)ui.st.textContent=m};
 function halt(){clearInterval(timer);playing=false;if(src){try{src.stop()}catch(e){}src=null}if(ael){try{ael.pause()}catch(e){}ael=null}kill()}
 function stop(){halt();paused=0;ev=[];say('Stopped');draw()}
+/* ---- SoundFont (.sf2) playback: reads the file, plays its samples with envelopes, loops, tuning and pan ---- */
+const SFADD=new Set([8,17,33,34,35,36,37,38,48,51,52,56]),t2s=c=>Math.pow(2,c/1200);
+function sfParse(buf){
+ const d=new DataView(buf),u8=new Uint8Array(buf),T=o=>String.fromCharCode(u8[o],u8[o+1],u8[o+2],u8[o+3]),S=(o,n)=>{let s='';for(let i=o;i<o+n&&u8[i];i++)s+=String.fromCharCode(u8[i]);return s};
+ if(buf.byteLength<12||T(0)!=='RIFF'||T(8)!=='sfbk')throw new Error('That is not an SF2 SoundFont.');
+ let smpl=null;const C={};
+ const walk=(o,e)=>{while(o+8<=e){const id=T(o),n=d.getUint32(o+4,true),b=o+8;
+  if(id==='LIST'){const ty=T(b);if(ty==='sdta'||ty==='pdta')walk(b+4,Math.min(b+n,e))}
+  else if(id==='smpl')smpl=(b%2)?new Int16Array(buf.slice(b,b+(n&~1))):new Int16Array(buf,b,n>>1);
+  else C[id]=[b,n];
+  o=b+n+(n&1)}};
+ walk(12,buf.byteLength);
+ if(!smpl||!C.phdr||!C.shdr||!C.pgen||!C.igen)throw new Error('This SoundFont has no usable sample data (compressed SF3 files are not supported).');
+ const rec=(id,sz,f)=>{const[b,n]=C[id],o=[];for(let i=0;i+sz<=n;i+=sz)o.push(f(b+i));return o};
+ const ph=rec('phdr',38,o=>({n:S(o,20),p:d.getUint16(o+20,true),b:d.getUint16(o+22,true),g:d.getUint16(o+24,true)})),
+  bag=id=>rec(id,4,o=>d.getUint16(o,true)),gen=id=>rec(id,4,o=>({o:d.getUint16(o,true),lo:u8[o+2],hi:u8[o+3],s:d.getInt16(o+2,true)})),
+  inst=rec('inst',22,o=>({n:S(o,20),g:d.getUint16(o+20,true)})),
+  sh=rec('shdr',46,o=>({n:S(o,20),s:d.getUint32(o+20,true),e:d.getUint32(o+24,true),ls:d.getUint32(o+28,true),le:d.getUint32(o+32,true),r:d.getUint32(o+36,true),k:u8[o+40],c:d.getInt8(o+41),t:d.getUint16(o+44,true)}));
+ if(sh.some(x=>x.t&16))throw new Error('This SoundFont is compressed (SF3), which is not supported. Use an SF2.');
+ const pb=bag('pbag'),pgn=gen('pgen'),ib=bag('ibag'),ign=gen('igen');
+ const zs=(bags,gens,a,b)=>{const Z=[];for(let j=a;j<b&&j+1<bags.length;j++){const g={};for(let k=bags[j];k<bags[j+1];k++){const x=gens[k];if(x)g[x.o]=(x.o===43||x.o===44)?[x.lo,x.hi]:x.s}Z.push(g)}return Z};
+ const isect=(p,q)=>{p=p||[0,127];q=q||[0,127];return[Math.max(p[0],q[0]),Math.min(p[1],q[1])]};
+ const regs=pi=>{const pz=zs(pb,pgn,ph[pi].g,ph[pi+1].g),pgl=pz.length&&pz[0][41]===undefined?pz.shift():{},R=[];
+  pz.forEach(z=>{if(z[41]===undefined||!inst[z[41]+1])return;const Z=Object.assign({},pgl,z),iz=zs(ib,ign,inst[z[41]].g,inst[z[41]+1].g),igl=iz.length&&iz[0][53]===undefined?iz.shift():{};
+   iz.forEach(y=>{if(y[53]===undefined||!sh[y[53]])return;const Y=Object.assign({},igl,y),k=isect(Z[43],Y[43]),v=isect(Z[44],Y[44]);if(k[0]>k[1]||v[0]>v[1])return;R.push({k,v,Y,Z,s:sh[Y[53]]})})});return R};
+ const PM={};let nm=0,first;ph.forEach((p,i)=>{if(i>=ph.length-1)return;PM[p.b+'|'+p.p]=i;if(p.b!==128){nm++;if(first===undefined)first=i}});
+ return{PM,regs,smpl,nm,first,cache:{},bufs:{},names:ph.slice(0,-1).map(p=>p.n)}}
+function sfPre(ch){const F=SFN,pr=pg[ch]>>0;let pi;
+ if(ch===9){pi=F.PM['128|'+pr];if(pi===undefined)pi=F.PM['128|0']}
+ else{pi=F.PM[bk[ch]+'|'+pr];if(pi===undefined)pi=F.PM['0|'+pr];if(pi===undefined&&F.nm<=4)pi=F.first}
+ return pi===undefined?null:(F.cache[pi]||(F.cache[pi]=F.regs(pi)))}
+function sfOn(ch,n,v,at){const F=SFN,R=sfPre(ch);if(!R)return false;const vel=v/127,dr=ch===9,key=dr?n:n+tr;
+ for(const r of R){if(n<r.k[0]||n>r.k[1]||v<r.v[0]||v>r.v[1])continue;
+  const G=(o,df)=>{let x=r.Y[o]!==undefined?r.Y[o]:df;if(SFADD.has(o)&&r.Z[o]!==undefined)x+=r.Z[o];return x},sm=r.s,os=(a,c)=>G(a,0)+G(c,0)*32768;
+  const st=sm.s+os(0,4),en=sm.e+os(1,12);if(en<=st+1||en>F.smpl.length)continue;
+  const kb=st+'-'+en;let buf=F.bufs[kb];
+  if(!buf){const sr=Math.max(8000,sm.r||44100),ln=en-st;buf=ctx.createBuffer(1,ln,sr);const c0=buf.getChannelData(0);for(let i=0;i<ln;i++)c0[i]=F.smpl[st+i]/32768;F.bufs[kb]=buf}
+  let root=G(58,-1);if(root<0||root>127)root=sm.k<=127?sm.k:60;
+  const rate=Math.pow(2,((key-root)*G(56,100)/100+G(51,0)+G(52,0)/100+sm.c/100)/12)*((sm.r||44100)/buf.sampleRate);
+  const ls=sm.ls+os(2,45)-st,le=sm.le+os(3,50)-st,loop=(G(54,0)&1)&&le>ls+8&&le<=en-st;
+  const sr=ctx.createBufferSource();sr.buffer=buf;sr.playbackRate.value=rate;if(loop){sr.loop=true;sr.loopStart=ls/buf.sampleRate;sr.loopEnd=le/buf.sampleRate}
+  let last=sr;const fc=G(8,13500);if(fc<13000){const f=ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=Math.min(20000,8.176*t2s(fc));last.connect(f);last=f}
+  const e=ctx.createGain();last.connect(e);last=e;const pn2=G(17,0)/500;if(Math.abs(pn2)>.02){const p=ctx.createStereoPanner();p.pan.value=Math.max(-1,Math.min(1,pn2));last.connect(p);last=p}
+  const rg=ctx.createGain();last.connect(rg);rg.connect(chg[ch]);
+  const att=Math.max(0,Math.min(1440,G(48,0))),pk=vel*vel*Math.pow(10,-att/200)*.9,lv=Math.pow(10,-Math.max(0,Math.min(1440,G(37,0)))/200);
+  const t1=at+t2s(Math.max(-12000,G(33,-12000))),t2=t1+t2s(Math.max(-12000,G(34,-12000))),t3=t2+t2s(Math.max(-12000,G(35,-12000)));
+  e.gain.setValueAtTime(0,at);e.gain.setValueAtTime(0,t1);e.gain.linearRampToValueAtTime(pk,t2);e.gain.setValueAtTime(pk,t3);e.gain.setTargetAtTime(pk*lv,t3,Math.max(.01,t2s(Math.max(-12000,G(36,-12000)))/3));
+  sr.start(at);
+  if(dr){sr.stop(at+(loop?2:buf.duration/rate+.1));sr.onended=()=>{try{rg.disconnect()}catch(x){}}}
+  else{const V={os:[sr],rg,rel:Math.min(5,t2s(Math.max(-12000,G(38,-12000))))};live.add(V);sr.onended=()=>{live.delete(V);try{rg.disconnect()}catch(x){}};const k=ch*128+n;if(!vm.has(k))vm.set(k,[]);vm.get(k).push(V)}}
+ return true}
+const sfName=u=>{try{return decodeURIComponent(u.split('?')[0].split('/').pop()).replace(/\.sf[23]$/i,'')||'SoundFont'}catch(e){return'SoundFont'}};
+async function sfLoad(u){if(!u){SFN=null;return}if(sfCache[u]){SFN=sfCache[u];return}
+ const my=++sfTok;say('Loading SoundFont '+sfName(u)+' ...');
+ try{const buf=await grab(gh(/^(https?|blob|data):/i.test(u)?u:new URL(u,location.href).href)),F=sfParse(buf);if(my!==sfTok&&sfSel!==u)return;sfCache[u]=F;if(sfSel===u){SFN=F;say('SoundFont ready: '+sfName(u)+' ('+F.names.length+' preset'+(F.names.length===1?'':'s')+')')}}
+ catch(e){sfFail[u]=1;if(sfSel===u){SFN=null;say('Could not use that SoundFont ('+(e&&e.message||'unreadable file')+') Using the built-in synth.')}}}
+async function sfList(force){const toks=(SF.src||'').split(/[\s,]+/).filter(Boolean);let L=[];
+ for(const k of toks){if(GHF.test(gh(k))&&!/\.sf2$/i.test(k)){let c=null;try{c=JSON.parse(sessionStorage.getItem('nrd-sfl')||'null')}catch(e){}
+   if(!force&&c&&c.s===k&&Date.now()-c.t<6e5){L=L.concat(c.l);continue}
+   try{const l=(await ls(k,/\.sf2$/i)).map(y=>({t:sfName(y.name),u:y.download_url}));L=L.concat(l);try{sessionStorage.setItem('nrd-sfl',JSON.stringify({s:k,t:Date.now(),l}))}catch(e){}}catch(e){say('Could not read the SoundFont folder (check the link, or the GitHub rate limit).')}}
+  else L.push({t:sfName(k),u:k})}
+ SFL=L.concat(SFL.filter(x=>x.l))}
+function sfDraw(){if(!ui||!ui.sf)return;ui.sf.innerHTML='<option value="">Built-in synth</option>'+SFL.map(x=>'<option value="'+esc(x.u)+'">'+esc(x.t)+'</option>').join('');
+ if(sfSel&&!SFL.some(x=>x.u===sfSel)&&SFL.length)sfSel='';ui.sf.value=sfSel}
+function sfPick(u){sfSel=u;if(ED()){SF.def=u;store()}else{try{localStorage.setItem('nrd-sf',u)}catch(e){}}SFN=u&&sfCache[u]||null;if(u&&!SFN)sfLoad(u);else say(u?'SoundFont: '+sfName(u):'Built-in synth');sfDraw()}
 const isMidi=b=>{const u=new Uint8Array(b,0,Math.min(b.byteLength,4096));for(let i=0;i+3<u.length;i++)if(u[i]===77&&u[i+1]===84&&u[i+2]===104&&u[i+3]===100)return 1;return 0};
 const tmo=ms=>{try{return{signal:AbortSignal.timeout(ms)}}catch(e){return{}}};
 async function grab(u){const loc=/^(blob|data):/i.test(u);
@@ -3445,7 +3511,7 @@ async function play(i,at0){const it=PL[i];if(!it)return;
   if(my!==tk)return;dur=m.d;reset();at0=at0||0;aud=!!(m.A||m.el);let j=0;ev=[];
   if(m.A){src=ctx.createBufferSource();src.buffer=m.A;src.playbackRate.value=rate;src.connect(mg);src.start(0,Math.min(at0,Math.max(0,dur-.05)))}
   else if(m.el){const a=await viaEl(url);if(my!==tk){a.src='';return}a.playbackRate=rate;a.volume=vol;if(at0)a.currentTime=Math.min(at0,Math.max(0,(a.duration||0)-.05));await a.play();if(my!==tk){a.pause();a.src='';return}ael=a;if(isFinite(a.duration)&&a.duration>0)dur=m.d=a.duration}
-  else{ev=m.E;while(j<ev.length&&ev[j][0]<at0){if(ev[j][1]>=11)fire(ev[j],ctx.currentTime);j++}}
+  else{if(sfSel&&!SFN&&!sfFail[sfSel]){await sfLoad(sfSel);if(my!==tk)return}ev=m.E;while(j<ev.length&&ev[j][0]<at0){if(ev[j][1]>=11)fire(ev[j],ctx.currentTime);j++}}
   evi=j;t0=ctx.currentTime-at0/rate;playing=true;timer=setInterval(tick,30);say('Playing '+ttl+' from '+host(it.u));draw()}
  catch(e){if(my!==tk)return;playing=false;if(ael){try{ael.pause()}catch(x){}ael=null}
   say(e&&e.name==='NotAllowedError'?'The browser blocked playback. Press Play again.':e&&e.message&&typeof e==='object'?e.message:'That file could not be read as MIDI, or it has no notes.');draw()}}
@@ -3483,7 +3549,7 @@ const CMD={prev:()=>step(-1),next:()=>step(1),stop,rw:()=>seekBy(-5),ff:()=>seek
    if(GHF.test(g)&&!AX.test(g)){say('Reading GitHub folder ...');try{(await ls(g)).forEach(y=>{if(!PL.some(p=>gh(p.u)===y.download_url)){PL.push({t:'',u:y.download_url});n++}})}catch(e){say('Could not read that GitHub folder (private repo, wrong link, or rate limit).')}}
    else{PL.push({t,u:g});n++}}
   if(n){store();ui.u.value=ui.t.value='';sel=PL.length-1;draw();say('Added '+n+' file'+(n===1?'':'s'))}},
- open:()=>ui.fi.click(),del:()=>{if(sel<0||!PL[sel])return;if(PL[sel].l){try{URL.revokeObjectURL(PL[sel].u)}catch(e){}}if(PL[sel].g){say('This file comes from the GitHub folder. Remove it there.');return}if(sel===cur){stop();cur=-1}else if(sel<cur)cur--;PL.splice(sel,1);sel=Math.min(sel,PL.length-1);store();draw()},
+ open:()=>ui.fi.click(),sfopen:()=>ui.sff.click(),sfset:()=>{SF.src=ui.s.value.trim();store();sfList(true).then(sfDraw)},del:()=>{if(sel<0||!PL[sel])return;if(PL[sel].l){try{URL.revokeObjectURL(PL[sel].u)}catch(e){}}if(PL[sel].g){say('This file comes from the GitHub folder. Remove it there.');return}if(sel===cur){stop();cur=-1}else if(sel<cur)cur--;PL.splice(sel,1);sel=Math.min(sel,PL.length-1);store();draw()},
  up:()=>mv(-1),dn:()=>mv(1),src:()=>{SRC=ui.g.value.trim();store();glDone='';PL=PL.filter(x=>!x.g);draw();glSync(true)},sync:()=>glSync(true)};
 function addFiles(fl){let n=0;[...fl].forEach(f=>{if(/^(image|text)\//.test(f.type)&&!AX.test(f.name))return;PL.push({t:f.name.replace(AX,'')||f.name,u:URL.createObjectURL(f),l:1});n++});
  if(n){sel=PL.length-1;draw();say('Added '+n+' file'+(n===1?'':'s')+' from this device (kept until you close the page)')}else say('Those files were not MIDI or audio.')}
@@ -3494,20 +3560,20 @@ function build(b,w){const ed=ED();
  b.innerHTML='<div class="mj"><div class="mj-top"><div class="lcdw"><canvas class="mj-cv" width="300" height="84"></canvas><div class="mj-nm"></div></div><div class="side"><div class="brand">Player</div><div class="grp"><span>Volume</span><input class="mj-vo" type="range" min="0" max="100" value="'+Math.round(vol*100)+'" aria-label="Volume"></div>'+spin('tm','Tempo')+spin('kr','Key')+'</div></div>'+
  '<div class="mj-tr">'+['prev','rw','play','pause','stop','ff','next'].map(k=>'<button data-c="'+k+'" aria-label="'+k+'"><svg viewBox="0 0 14 14"><path d="'+IC[k]+'"/></svg></button>').join('')+'<input class="mj-sk" type="range" min="0" max="1000" value="0" aria-label="Position"><button data-c="auto">Auto</button><button data-c="sh">Shuffle</button><button data-c="rp">Repeat</button></div>'+
  '<div class="mj-mx">'+Array.from({length:16},(_,i)=>'<div class="ch"><u class="lt"></u><i class="kn"></i><input class="fd" type="range" min="0" max="150" value="100" data-f="'+i+'" aria-label="Channel '+(i+1)+' level"><button data-m="'+i+'">M</button><button data-s="'+i+'">S</button><b>'+(i+1)+'</b><small></small></div>').join('')+'</div>'+
- '<div class="mj-ed"><button data-c="open">Open files...</button><input class="mj-fi" type="file" multiple hidden accept="audio/*,.mid,.midi,.rmi,.kar,.mp3,.ogg,.oga,.opus,.wav,.m4a,.aac,.flac,.weba,.webm,.aif,.aiff"><span class="mj-dz">or drop MIDI / audio files here</span></div><div class="mj-hd"><span>#</span><span>Title</span><span>Time</span><span>Source</span></div><div class="mj-ls" tabindex="0"></div>'+
- (ed?'<div class="mj-ed"><input class="mj-in1" placeholder="Title (optional)"><input class="mj-in2" placeholder="Link to a .mid or .mp3 file, or a GitHub folder"><button data-c="add">Add</button><button data-c="del">Remove</button><button data-c="up">Up</button><button data-c="dn">Down</button></div><div class="mj-ed"><input class="mj-in3" placeholder="GitHub folder for the shared library (optional)" value="'+esc(SRC)+'"><button data-c="src">Set</button><button data-c="sync">Sync</button></div>':'')+
+ '<div class="mj-ed"><button data-c="open">Open files...</button><input class="mj-fi" type="file" multiple hidden accept="audio/*,.mid,.midi,.rmi,.kar,.mp3,.ogg,.oga,.opus,.wav,.m4a,.aac,.flac,.weba,.webm,.aif,.aiff"><span class="mj-dz">or drop files here</span><span class="mj-dz" style="margin-left:auto">SoundFont</span><select class="mj-sf" style="min-width:120px;max-width:190px"><option value="">Built-in synth</option></select><button data-c="sfopen">.sf2...</button><input class="mj-sff" type="file" hidden accept=".sf2"></div><div class="mj-hd"><span>#</span><span>Title</span><span>Time</span><span>Source</span></div><div class="mj-ls" tabindex="0"></div>'+
+ (ed?'<div class="mj-ed"><input class="mj-in1" placeholder="Title (optional)"><input class="mj-in2" placeholder="Link to a .mid or .mp3 file, or a GitHub folder"><button data-c="add">Add</button><button data-c="del">Remove</button><button data-c="up">Up</button><button data-c="dn">Down</button></div><div class="mj-ed"><input class="mj-in3" placeholder="GitHub folder for the shared library (optional)" value="'+esc(SRC)+'"><button data-c="src">Set</button><button data-c="sync">Sync</button></div><div class="mj-ed"><input class="mj-in4" placeholder="SoundFont folder (GitHub) or .sf2 links" value="'+esc(SF.src)+'"><button data-c="sfset">Set</button></div>':'')+
  '<div class="mj-sb"><span class="mj-st">Ready</span><span class="mj-n"></span></div></div>';
- const r=$('.mj',b);ui={r,ls:$('.mj-ls',r),cv:$('.mj-cv',r),nm:$('.mj-nm',r),st:$('.mj-st',r),cnt:$('.mj-n',r),sk:$('.mj-sk',r),tmv:$('.tmv',r),krv:$('.krv',r),t:$('.mj-in1',r),u:$('.mj-in2',r),g:$('.mj-in3',r),fi:$('.mj-fi',r),dg:false,ch:$$('.ch',r).map(el=>({el,lt:$('.lt',el),kn:$('.kn',el),nm:$('small',el)}))};
- let lk=-1,lt=0;ui.fi.onchange=()=>{addFiles(ui.fi.files);ui.fi.value=''};r.ondragover=e=>e.preventDefault();r.ondrop=e=>{e.preventDefault();if(e.dataTransfer&&e.dataTransfer.files.length)addFiles(e.dataTransfer.files)};
+ const r=$('.mj',b);ui={r,ls:$('.mj-ls',r),cv:$('.mj-cv',r),nm:$('.mj-nm',r),st:$('.mj-st',r),cnt:$('.mj-n',r),sk:$('.mj-sk',r),tmv:$('.tmv',r),krv:$('.krv',r),t:$('.mj-in1',r),u:$('.mj-in2',r),g:$('.mj-in3',r),s:$('.mj-in4',r),sf:$('.mj-sf',r),sff:$('.mj-sff',r),fi:$('.mj-fi',r),dg:false,ch:$$('.ch',r).map(el=>({el,lt:$('.lt',el),kn:$('.kn',el),nm:$('small',el)}))};
+ let lk=-1,lt=0;ui.sf.onchange=()=>sfPick(ui.sf.value);ui.sff.onchange=()=>{[...ui.sff.files].forEach(f=>{const u=URL.createObjectURL(f);SFL.push({t:sfName(f.name),u,l:1});sfPick(u)});ui.sff.value=''};ui.fi.onchange=()=>{addFiles(ui.fi.files);ui.fi.value=''};r.ondragover=e=>e.preventDefault();r.ondrop=e=>{e.preventDefault();if(e.dataTransfer&&e.dataTransfer.files.length)addFiles(e.dataTransfer.files)};
  r.onclick=e=>{const m=e.target.closest('[data-m],[data-s]');if(m){const i=+(m.dataset.m||m.dataset.s),S=m.dataset.m!==undefined?mu:so;S.has(i)?S.delete(i):S.add(i);if(ctx)for(let c=0;c<16;c++)ga(c,ctx.currentTime);mbtn();return}
   const t=e.target.closest('button[data-c],.mj-i');if(!t)return;if(t.dataset.c){CMD[t.dataset.c]();return}const k=+t.dataset.i,nw=Date.now();if(k===lk&&nw-lt<500){lt=0;play(k,0);return}lk=k;lt=nw;sel=k;draw();if(matchMedia('(pointer:coarse)').matches)play(sel,0)};
  r.oninput=e=>{const f=e.target;if(f.dataset.f!==undefined){const i=+f.dataset.f;ug[i]=f.value/100;if(ctx)ga(i,ctx.currentTime)}};
  ui.sk.oninput=()=>{ui.dg=true};ui.sk.onchange=()=>{ui.dg=false;if(cur>-1&&dur)play(cur,ui.sk.value/1000*dur)};
  $('.mj-vo',r).oninput=e=>{vol=e.target.value/100;if(mg)mg.gain.value=vol;if(ael)ael.volume=vol};
  if(ui.u)ui.u.onkeydown=e=>{if(e.key==='Enter')CMD.add()};
- w.menu=[{l:'File',m:(ed?[['Add link...',()=>ui&&ui.u&&ui.u.focus()],['Remove selected',CMD.del],'-']:[]).concat([['Close',()=>w9close(w.id)]])},{l:'Options',m:[['Auto-advance',CMD.auto],['Shuffle',CMD.sh],['Repeat',CMD.rp],'-',['Reset mixer',resetMix],['Sync GitHub library',()=>glSync(true)]]},{l:'Help',m:[['About Player',()=>alert('Player\nPlays MIDI files with a built-in synthesizer, and MP3, OGG, WAV, M4A, FLAC and other audio.\nOpen files from this device, drop them on the window, or add links.\nTempo works on everything. Key, mute, solo and channel levels are for MIDI only.')]]}];
- draw();glSync()}
-window.mjDef=()=>({t:'Player',i:'midi',w:600,h:635,menu:true,build:(b,w)=>build(b,w)});
+ w.menu=[{l:'File',m:(ed?[['Add link...',()=>ui&&ui.u&&ui.u.focus()],['Remove selected',CMD.del],'-']:[]).concat([['Close',()=>w9close(w.id)]])},{l:'Options',m:[['Auto-advance',CMD.auto],['Shuffle',CMD.sh],['Repeat',CMD.rp],'-',['Reset mixer',resetMix],['Sync GitHub library',()=>glSync(true)]]},{l:'Help',m:[['About Player',()=>alert('Player\nPlays MIDI files with a built-in synthesizer, and MP3, OGG, WAV, M4A, FLAC and other audio.\nOpen files from this device, drop them on the window, or add links.\nPick a SoundFont (.sf2) to play MIDI with real instrument samples.\nTempo works on everything. Key, mute, solo and channel levels are for MIDI only.')]]}];
+ draw();glSync();try{sfSel=(!ED()&&localStorage.getItem('nrd-sf'))||SF.def||''}catch(e){sfSel=SF.def||''}sfDraw();sfList().then(sfDraw)}
+window.mjDef=()=>({t:'Player',i:'midi',w:600,h:665,menu:true,build:(b,w)=>build(b,w)});
 })();
 </script>
 <style id="nrd-news-css">.rx-bar{flex-wrap:wrap}
@@ -3525,7 +3591,7 @@ body .sc{font-variant:small-caps;letter-spacing:.04em}
 .xskb:hover,.xskb:focus-visible{opacity:.8}
 </style>
 <script id="lore-boot">(function(){
-var V='mvt8gdkz',F={wiki:'data/wiki.json',stories:'data/stories.json',messenger:'data/messenger.json',outlets:'data/outlets.json'};
+var V='mvu8whre',F={wiki:'data/wiki.json',stories:'data/stories.json',messenger:'data/messenger.json',outlets:'data/outlets.json'};
 var pend=document.querySelectorAll('script[type="text/lore-deferred"]'),box=document.getElementById('lore-loading');
 if(!pend.length){if(box)box.remove();return}
 function fail(msg){if(!box)return;box.innerHTML='<div style="max-width:560px;padding:24px"><h2 style="margin:0 0 10px">The archive could not load</h2><p style="white-space:pre-wrap">'+msg+'</p><p><button id="lore-retry" style="font:inherit;padding:6px 14px">Try again</button></p></div>';document.getElementById('lore-retry').onclick=function(){location.reload()}}
