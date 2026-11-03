@@ -1131,7 +1131,7 @@ html.fx-mono body{filter:grayscale(1) contrast(1.35)}
 .lr-stats{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 12px}.lr-stats div{flex:1 1 90px;padding:10px;border:1px solid rgba(128,128,128,.4);text-align:center}.lr-stats b{display:block;font-size:1.6em}.lr-stats small{opacity:.7}.lr-bad{background:rgba(200,40,40,.15)}.lr-warn{background:rgba(220,160,0,.18)}.lr-l li{padding:3px 0;border-bottom:1px dotted rgba(128,128,128,.3)}.lr-e{font-size:.85em;opacity:.8}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,700;0,900;1,500;1,700&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&amp;display=swap" rel="stylesheet">
-<style id="nrd-np-css">.np-ed{outline:none;cursor:text;-webkit-user-select:text;user-select:text;min-height:100%}</style><style>html.ro .ed-act,html.ro #newp,html.ro #expb,html.ro #statsb,html.ro #tools-dlg,html.ro #stats-dlg{display:none!important}</style></head>
+<style>html.ro .ed-act,html.ro #newp,html.ro #expb,html.ro #statsb,html.ro #tools-dlg,html.ro #stats-dlg{display:none!important}</style></head>
 <body class="w95"><div id="lore-loading" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483000;background:#008080;color:#fff;font:15px Tahoma,Verdana,sans-serif;display:flex;align-items:center;justify-content:center">Loading the archive&hellip;</div>
 <div id="root"></div>
 <div id="crt" aria-hidden="true" style="opacity: 1;"></div>
@@ -1643,13 +1643,13 @@ function w9find(b,w){
  const fn=b.querySelector('.fn'),ft=b.querySelector('.ft'),list=b.querySelector('.w9-list'),sb=b.querySelectorAll('.w9-sb div');let sel=null,tm=null;
  function run(){const n=fn.value.trim().toLowerCase(),t=ft.value.trim().toLowerCase();
   if(!n&&!t){list.innerHTML='';sb[0].textContent='Type a name or a word to search every article.';sb[1].textContent='';return}
-  const r=w9keys().filter(k=>(!n||DATA[k].title.toLowerCase().includes(n))&&(!t||w9text(k).includes(t))).sort((a,c)=>DATA[a].title.localeCompare(DATA[c].title));
-  list.innerHTML='<table><thead><tr><th>Name</th><th>In Folder</th><th>Size</th></tr></thead><tbody>'+r.slice(0,300).map(k=>'<tr class="w9-it'+(sel===k?' sel':'')+'" data-k="'+k+'"><td>'+w9I('doc')+'<span>'+esc(DATA[k].title)+'</span></td><td>'+esc(DATA[k].cat)+'</td><td class="n">'+w9kb(k)+'</td></tr>').join('')+'</tbody></table>';
-  sb[0].textContent=r.length+' file(s) found';sb[1].textContent=r.length>300?'showing first 300':''}
+  const r=w9keys().filter(k=>(!n||DATA[k].title.toLowerCase().includes(n))&&(!t||w9text(k).includes(t))).sort((a,c)=>DATA[a].title.localeCompare(DATA[c].title));const rs=(window.xarts?window.xarts():[]).filter(a=>!DATA[a.k]&&(!n||String(a.p.title||'').toLowerCase().includes(n))&&(!t||(String(a.p.title||'')+' '+String(a.p.html||'').replace(/<[^>]+>/g,' ')).toLowerCase().includes(t))).slice(0,150);
+  list.innerHTML='<table><thead><tr><th>Name</th><th>In Folder</th><th>Size</th></tr></thead><tbody>'+r.slice(0,300).map(k=>'<tr class="w9-it'+(sel===k?' sel':'')+'" data-k="'+k+'"><td>'+w9I('doc')+'<span>'+esc(DATA[k].title)+'</span></td><td>'+esc(DATA[k].cat)+'</td><td class="n">'+w9kb(k)+'</td></tr>').join('')+rs.map(a=>'<tr class="w9-it" data-s="'+a.k+'"><td>'+w9I('doc')+'<span>'+esc(a.p.title)+'</span></td><td>The Outlet \u00b7 '+esc(((window.OUTLETS||{})[a.n.o]||{}).tag||a.n.o)+'</td><td class="n">'+a.n.y+' AG</td></tr>').join('')+'</tbody></table>';
+  sb[0].textContent=(r.length+rs.length)+' file(s) found'+(rs.length?' ('+rs.length+' in The Outlet)':'');sb[1].textContent=r.length>300?'showing first 300':''}
  const later=()=>{clearTimeout(tm);tm=setTimeout(run,140)};fn.oninput=later;ft.oninput=later;
  b.addEventListener('click',e=>{const a=e.target.closest('button');if(a){if(a.dataset.a==='new'){fn.value='';ft.value='';sel=null;run();fn.focus()}else run();return}
-  const x=e.target.closest('.w9-it');if(x){sel=x.dataset.k;if(w9coarse()||e.detail===0){location.hash='#/'+x.dataset.k;return}list.querySelectorAll('.w9-it').forEach(r=>r.classList.toggle('sel',r===x))}});
- b.addEventListener('dblclick',e=>{const x=e.target.closest('.w9-it');if(x)location.hash='#/'+x.dataset.k});
+  const x=e.target.closest('.w9-it');if(x&&x.dataset.s){if(w9coarse()||e.detail===0){window.nrdxOpenStory&&nrdxOpenStory(x.dataset.s);return}list.querySelectorAll('.w9-it').forEach(r=>r.classList.toggle('sel',r===x));return}if(x){sel=x.dataset.k;if(w9coarse()||e.detail===0){location.hash='#/'+x.dataset.k;return}list.querySelectorAll('.w9-it').forEach(r=>r.classList.toggle('sel',r===x))}});
+ b.addEventListener('dblclick',e=>{const x=e.target.closest('.w9-it');if(x&&x.dataset.s){window.nrdxOpenStory&&nrdxOpenStory(x.dataset.s);return}if(x)location.hash='#/'+x.dataset.k});
  w.menu=[{l:'File',m:[['Close',()=>w9close(w.id)]]},{l:'Help',m:[['About this wiki',()=>w9open('readme')]]}];
  setTimeout(()=>{if(!w9coarse())fn.focus()},30)}
 /* ---- Shut down ---- */
@@ -2871,7 +2871,7 @@ addEventListener('input',e=>{const v=(e.target.value||'').trim().toLowerCase();i
 </script>
 <script type="application/json" id="outlet-cfg"></script>
 <script type="application/json" id="stories-cfg"></script>
-<script type="application/json" id="owner-cfg">{"h":"6ed7abf671002ae7a6b78b4c41d365e994c481566cb1eab7082b9f413f988e7b"}</script>
+<script type="application/json" id="owner-cfg">null</script>
 <script type="application/json" id="msg-cfg"></script>
 <script type="text/lore-deferred">
 /* ===== calendar (reads dated events from the wiki) + draggable icons ===== */
@@ -4179,6 +4179,7 @@ function esc2(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 function rx(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}
 function stories(){try{return window.xarts?window.xarts():[]}catch(e){return[]}}
 function ymd(n){return (n.d?n.d+' ':'')+MONS[(n.m||1)-1]+' '+Math.abs(n.y)+' '+(n.y<0?'BG':'AG')}
+window.nrdxOpenStory=function(k){openStory(k)};
 function openStory(k){window.__otOpen=k;try{w9open('outlet',{})}catch(e){}if(window.xoutGo)window.xoutGo()}
 var SKIP={'News':1,'Photography':1,'About the wiki':1,'In-universe literature':1,'Statistics':1};
 function namesOf(p){var t=String(p.title||'').replace(/\s*\([^)]*\)\s*/g,' ').trim(),a=[t];if(/^The /.test(t))a.push(t.slice(4));var mm=t.match(/^(\S+ \S+) (attack|war|bombing|strike|trial)$/i);if(mm&&mm[1].length>=8)a.push(mm[1]);return a.filter(function(x){return x.length>=4&&/^[\p{L}\p{N}' ’\-]+$/u.test(x)})}
@@ -4253,8 +4254,29 @@ function linkReport(){var G=linkGraph(),ks=Object.keys(DATA),orph=ks.filter(func
  h+='<h2>Orphans <span class="rc-ct">'+orph.length+'</span></h2><p class="muted">Pages that no other page or Outlet story links to.</p>'+(orph.length?'<ul class="lr-l">'+orph.map(function(k){return'<li>'+pg(k)+' <small>'+esc2(DATA[k].cat)+'</small></li>'}).join('')+'</ul>':'<p class="muted">None.</p>');
  h+='<h2>Dead ends <span class="rc-ct">'+ends.length+'</span></h2><p class="muted">Pages that link to nothing.</p>'+(ends.length?'<ul class="lr-l">'+ends.map(function(k){return'<li>'+pg(k)+'</li>'}).join('')+'</ul>':'<p class="muted">None.</p>');
  h+='<h2>Most linked</h2><ol class="lr-l">'+top.map(function(k){return'<li><a href="#/'+k+'">'+esc2(DATA[k].title)+'</a> <small>'+Object.keys(G.inn[k]).length+' inbound</small></li>'}).join('')+'</ol></div>';return h}
-function addReport(){if(PUB)return;docs().forEach(function(x){var f=x.querySelector('.footer');if(f&&!f.querySelector('[data-lrl]'))f.insertAdjacentHTML('beforeend',' <span data-lrl="1">\u00b7 <a href="#" data-lr-open="1">Link report</a></span>')})}
+function addReport(){if(PUB)return;docs().forEach(function(x){var f=x.querySelector('.footer');if(f&&!f.querySelector('[data-lrl]'))f.insertAdjacentHTML('beforeend',' <span data-lrl="1">\u00b7 <a href="#" data-lr-open="1">Link report</a> \u00b7 <a href="#" data-cc-open="1">Consistency check</a></span>')})}
 document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('[data-lr-open]');if(!a||PUB)return;e.preventDefault();var d=a.closest('.w9-doc,#page');if(!d)return;d.innerHTML=linkReport();d.scrollTop=0;window.scrollTo(0,0)});
+
+/* ---------- consistency checker (editor only) ---------- */
+var RULES=[['Fire Lord Ozai',97,100,''],['Fire Lord Azula',100,118,'Azula claimed the throne from 100 AG'],['Fire Lord Zuko',100,168,'Zuko claimed the throne from 100 AG; crowned 118 AG'],['Fire Lord Izumi',168,9999,''],['Earth King Kuei',81,153,'']];
+var DIM=[0,31,29,31,30,31,30,31,31,30,31,30,31];
+function lifespans(){var out=[];Object.keys(DATA).forEach(function(k){var p=DATA[k];if(p.cat!=='People')return;var d=document.createElement('div');d.innerHTML=p.html;var b=null,dd=null;d.querySelectorAll('tr').forEach(function(r){var s=r.querySelector('td strong');if(!s)return;var l=s.textContent.trim().toLowerCase(),td=r.children[1];if(!td)return;if(l==='born'){var v=parseDate(td.textContent);if(v)b=v[0]}if(l==='died'){var v2=parseDate(td.textContent);if(v2)dd=v2[0]}});if(b!==null||dd!==null)out.push({k:k,name:String(p.title).split(' ')[0],full:p.title,b:b,d:dd})});return out}
+function consistency(){var iss=[],S=stories(),LS=lifespans(),O=window.OUTLETS||{};
+ S.forEach(function(a){var n=a.n,t=strip(a.p.html||'')+' '+(a.p.title||'')+' '+(n.deck||[]).join(' '),y=n.y,where={k:a.k,t:a.p.title,when:ymd(n)};
+  RULES.forEach(function(r){var i=t.indexOf(r[0]);if(i>=0&&(y<r[1]||y>r[2]))iss.push({sev:'error',rule:'Title outside tenure',msg:'&ldquo;'+esc2(r[0])+'&rdquo; used in '+(y<0?-y+' BG':y+' AG')+', but the wiki gives '+r[1]+'&ndash;'+(r[2]===9999?'':r[2])+' AG.'+(r[3]?' ('+esc2(r[3])+')':''),w:where})});
+  LS.forEach(function(L){var re=new RegExp('(?<![\\p{L}])'+rx(L.name)+'(?: [A-Z][\\p{L}]+)?(?:\\u2019s|\'s)? (said|says|told|announced|declared|warned|added|denied|spoke|ordered|signed)\\b','u');if(!re.test(t))return;
+   if(L.d!==null&&y>L.d&&n.t!=='obit'&&n.sec!=='Obituaries'&&!/\b(late|the death of|died|killed)\b/i.test(t.slice(Math.max(0,t.search(re)-60),t.search(re))))iss.push({sev:'error',rule:'Speaks after death',msg:esc2(L.full)+' is quoted in '+y+' AG; the wiki has '+esc2(L.full)+' dying in '+L.d+' AG.',w:where});
+   if(L.b!==null&&y<L.b)iss.push({sev:'error',rule:'Speaks before birth',msg:esc2(L.full)+' is quoted in '+y+' AG; the wiki has '+esc2(L.full)+' born in '+L.b+' AG.',w:where})});
+  var o=O[n.o],ev=o&&o.est?parseDate(o.est):null;if(ev&&(y<ev[0]||(y===ev[0]&&n.m&&ev[1]&&n.m<ev[1])))iss.push({sev:'warn',rule:'Before the outlet existed',msg:esc2(o.n)+' was founded '+esc2(o.est)+'; this story is dated '+ymd(n)+'.',w:where});
+  if(n.d&&n.m&&n.d>DIM[n.m])iss.push({sev:'error',rule:'Impossible date',msg:'Day '+n.d+' does not exist in '+MONS[n.m-1]+'.',w:where})});
+ var seen={};S.forEach(function(a){var k=(a.p.title||'').toLowerCase();if(seen[k])iss.push({sev:'warn',rule:'Duplicate headline',msg:'Same headline as another story.',w:{k:a.k,t:a.p.title,when:ymd(a.n)}});seen[k]=1});
+ return{iss:iss,n:S.length,people:LS.length}}
+function consReport(){var R=consistency(),e=R.iss.filter(function(x){return x.sev==='error'}).length,w=R.iss.length-e,by={};R.iss.forEach(function(x){(by[x.rule]=by[x.rule]||[]).push(x)});
+ var h='<h1 class="first">Consistency check</h1><div class="tagline">Editor tool · not part of the published wiki</div><div class="content"><div class="lr-stats"><div><b>'+R.n+'</b><small>stories checked</small></div><div><b>'+R.people+'</b><small>people with dates</small></div><div class="'+(e?'lr-bad':'')+'"><b>'+e+'</b><small>errors</small></div><div class="'+(w?'lr-warn':'')+'"><b>'+w+'</b><small>warnings</small></div></div><p class="muted">Checks: titles used outside their tenure (Fire Lord, Earth King), people quoted after death or before birth, stories dated before their outlet was founded, impossible dates, duplicate headlines. Rules are in the script and can be extended.</p>';
+ if(!R.iss.length)h+='<p>No problems found.</p>';
+ Object.keys(by).forEach(function(r){h+='<h2>'+esc2(r)+' <span class="rc-ct">'+by[r].length+'</span></h2><ul class="lr-l">'+by[r].map(function(x){return'<li><a href="#" data-ts="'+x.w.k+'">'+esc2(x.w.t)+'</a> <small>'+esc2(x.w.when)+'</small><br>'+x.msg+'</li>'}).join('')+'</ul>'});
+ return h+'</div>'}
+document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('[data-cc-open]');if(!a||PUB)return;e.preventDefault();var d=a.closest('.w9-doc,#page');if(!d)return;d.innerHTML=consReport();d.scrollTop=0;d.querySelectorAll('[data-ts]').forEach(function(x){x.onclick=function(ev){ev.preventDefault();openStory(x.getAttribute('data-ts'))}})});
 /* ---------- driver ---------- */
 var T;function run(){try{document.querySelectorAll('.st-body:not([data-nl])').forEach(linkNames);addRelated();addTimeline();addReport()}catch(e){}}
 new MutationObserver(function(){clearTimeout(T);T=setTimeout(run,80)}).observe(document.body,{childList:true,subtree:true});
@@ -4262,7 +4284,7 @@ window.addEventListener('hashchange',function(){clearTimeout(T);T=setTimeout(run
 })();
 </script>
 <script id="lore-boot">(function(){
-var V='mvyo7u41',F={wiki:'data/wiki.json',stories:'data/stories.json',messenger:'data/messenger.json',outlets:'data/outlets.json'};
+var V='mvzy69ag',F={wiki:'data/wiki.json',stories:'data/stories.json',messenger:'data/messenger.json',outlets:'data/outlets.json'};
 var pend=document.querySelectorAll('script[type="text/lore-deferred"]'),box=document.getElementById('lore-loading');
 if(!pend.length){if(box)box.remove();return}
 function fail(msg){if(!box)return;box.innerHTML='<div style="max-width:560px;padding:24px"><h2 style="margin:0 0 10px">The archive could not load</h2><p style="white-space:pre-wrap">'+msg+'</p><p><button id="lore-retry" style="font:inherit;padding:6px 14px">Try again</button></p></div>';document.getElementById('lore-retry').onclick=function(){location.reload()}}
