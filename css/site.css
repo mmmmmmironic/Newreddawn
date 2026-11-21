@@ -1029,8 +1029,8 @@ html body .art p{line-height:1.55}
 /* welcome: a scroll cue instead of a hard cut mid-sentence */
 .w9-welcome .w9-doc{background:linear-gradient(to top,#fff 30%,rgba(255,255,255,0)) bottom/100% 40px no-repeat local,linear-gradient(to top,rgba(0,0,0,.28),rgba(0,0,0,0)) bottom/100% 14px no-repeat scroll,#fff}
 
-/* ---- nrd-np-css ---- */
-.np-ed{outline:none;cursor:text;-webkit-user-select:text;user-select:text;min-height:100%}
+/* ---- century-articles ---- */
+.ox.ox.ox.ox article.st,.ox.ox.ox.ox article.st *{font-family:'Century Schoolbook','New Century Schoolbook','Century Schoolbook L',C059,'TeX Gyre Schola',Georgia,serif!important}.ox.ox.ox.ox article.st .st-by,.ox.ox.ox.ox article.st .st-by *,.ox.ox.ox.ox article.st .st-top,.ox.ox.ox.ox article.st .st-top *,.ox.ox.ox.ox article.st .st-kick,.ox.ox.ox.ox article.st .st-tags span,.ox.ox.ox.ox article.st .st-rel,.ox.ox.ox.ox article.st .st-rel *,.ox.ox.ox.ox article.st .st-kf,.ox.ox.ox.ox article.st .st-kf *,.ox.ox.ox.ox article.st .st-end,.ox.ox.ox.ox article.st .st-live{font-family:'Century Gothic','URW Gothic','Avant Garde','TeX Gyre Adventor',system-ui,sans-serif!important}
 
 /* ---- base ---- */
 html.ro .ed-act,html.ro #newp,html.ro #expb,html.ro #statsb,html.ro #tools-dlg,html.ro #stats-dlg{display:none!important}
