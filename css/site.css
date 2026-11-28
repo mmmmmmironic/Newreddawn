@@ -1795,3 +1795,30 @@ table.wikitable.wt-on tbody tr.wt-hit{animation:wthit 1.3s ease-out 1}
 .wt-bar button:hover{background:rgba(255,190,0,.25)}
 .wt-bar .wt-n{margin-left:auto;opacity:.7}
 @media (prefers-reduced-motion:reduce){table.wikitable.wt-on tbody tr.wt-hit{animation:none;background:rgba(255,120,0,.5)}}
+
+/* ---- nrd-ox-ui ---- */
+/* NRD Outlet consistency + typeface tokens (build 162) */
+:root{--ox-ff-head:'Gelasio','Cheltenham','Georgia',serif;--ox-ff-body:'Source Serif 4','Charter','Georgia',serif;--ox-ff-ui:'Libre Franklin','Franklin Gothic Medium','Helvetica Neue',Arial,sans-serif}
+/* 1. Themed outlets use the main Outlet's bars: neutral status bar, white menu bar with a black rule; the outlet colour stays in the masthead and a 3px top rule. */
+.ox.ox-th .ox-stat{background:#f1f1f1!important;color:#333!important;border-bottom:1px solid #999!important}
+.ox.ox-th .ox-stat *{color:#333!important}
+.ox.ox-th .ox-nav{background:#fff!important;color:#000!important;border:0!important;border-top:3px solid var(--ac)!important;border-bottom:2px solid #000!important}
+.ox.ox-th .ox-nav *{color:#000!important}
+.ox.ox-th .ox-nav .ox-bars i{background:#000!important}
+.ox.ox-th .ox-acc2 button{background:#fff!important;color:#000!important;border-color:#666!important}
+.ox.ox-th .ox-nav a.on,.ox.ox-th .ox-nav .ox-here{color:var(--ac)!important}
+.ox-dk .ox-th .ox-stat{background:#242424!important;color:#f2f2f2!important;border-bottom-color:#4a4a4a!important}
+.ox-dk .ox-th .ox-stat *{color:#f2f2f2!important}
+.ox-dk .ox-th .ox-nav{background:#181818!important;border-bottom-color:#f2f2f2!important}
+.ox-dk .ox-th .ox-nav *{color:#f2f2f2!important}
+.ox-dk .ox-th .ox-nav .ox-bars i{background:#f2f2f2!important}
+.ox-dk .ox-th .ox-acc2 button{background:#242424!important;color:#f2f2f2!important;border-color:#777!important}
+/* 2. Narrow windows: the section label gives way so Archive, Letters and Saved always fit, and the crumb wraps cleanly. */
+@media(max-width:700px){.ox .ox-nav{gap:6px!important;padding-left:12px!important;padding-right:6px!important}.ox .ox-acc2{margin:0 2px!important;gap:2px!important}.ox .ox-acc2 button{min-width:26px!important;padding:0 4px!important}.ox .ox-nav .ox-here{display:none!important}.ox .ox-sx{overflow-x:auto!important;scrollbar-width:none}.ox .ox-crumb{text-wrap:balance;letter-spacing:.04em!important;line-height:1.5}.ox .ox-sx a{padding:11px 7px!important;font-size:10.5px!important}}
+/* 3. Typeface switch (the Aa button). Classic is the shipped look. */
+.ox .ox-acc2 .ox-tyb{font-family:Georgia,serif;font-weight:700;font-style:italic;text-transform:none!important;letter-spacing:0!important}
+.ox .ox-acc2 .ox-tyb[aria-pressed="true"]{background:#000!important;color:#fff!important}
+html[data-ox-type="nyt"] .ox :is(h2,h3,.st-h){font-family:var(--ox-ff-head)!important;font-weight:700!important;letter-spacing:-.01em}
+html[data-ox-type="nyt"] .ox :is(p,.st-deck,.ox-deck,.st-end,.ox-ex,blockquote,li){font-family:var(--ox-ff-body)!important}
+html[data-ox-type="nyt"] .ox :is(.ox-hbt,.ox-sx a,.ox-acc2 button,.ox-crumb,.ox-lt,.ox-nat,.ox-sec,.ox-by,.st-kick,.ox-bmk,.ox-ct,h4,h5,.ox-tag,.ox-chip,.ox-tools a,.ox-mega a,.ox-stat){font-family:var(--ox-ff-ui)!important;letter-spacing:.02em}
+html[data-ox-type="nyt"] .ox .ox-acc2 .ox-tyb{font-family:var(--ox-ff-head)!important}
